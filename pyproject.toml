@@ -1,0 +1,22 @@
+[project]
+name = "pds-node-mcp"
+version = "0.1.0"
+description = "FastMCP server exposing NASA PDS discipline-node tools (geo, ppi, lroc, img, rms, sbn, atm, naif) over MCP."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp>=2.0.0",
+    "httpx>=0.27",
+    "loguru>=0.7",
+    "pydantic>=2.0",
+]
+
+[project.scripts]
+pds-node-mcp = "pds_node_mcp.__main__:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["pds_node_mcp*"]
