@@ -21,11 +21,16 @@ from __future__ import annotations
 
 from fastmcp import FastMCP
 
-from .inspect_collections import pds_inspect_collections
-from .list_dataset_dirs import pds_list_dataset_dirs
-from .list_missions import pds_list_missions
-from .probe_datasets import pds_probe_datasets
-from .resolve_volume import pds_resolve_volume
+# Absolute imports so this module can be loaded BOTH as part of the
+# pds_node_mcp package AND directly by file path. FastMCP Cloud's build
+# runs `fastmcp inspect .../server.py`, which loads via file path and
+# strips the package context — relative imports would fail with
+# "attempted relative import with no known parent package".
+from pds_node_mcp.inspect_collections import pds_inspect_collections
+from pds_node_mcp.list_dataset_dirs import pds_list_dataset_dirs
+from pds_node_mcp.list_missions import pds_list_missions
+from pds_node_mcp.probe_datasets import pds_probe_datasets
+from pds_node_mcp.resolve_volume import pds_resolve_volume
 
 mcp = FastMCP("pds-tools")
 
