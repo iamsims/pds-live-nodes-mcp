@@ -4,11 +4,12 @@ Run standalone:
     python -m pds_node_mcp                       # stdio (default)
     python -m pds_node_mcp --transport sse       # SSE on :8001
 
-Six tools, each accepting a ``node`` parameter (one of: geo, ppi, lroc,
+Five tools, each accepting a ``node`` parameter (one of: geo, ppi, lroc,
 img, rms, sbn, atm, naif). The server is stateless — every tool call
-operates on the node passed in its arguments.
+operates on the node passed in its arguments. Agent-facing prompt
+content (workflow notes, abbreviation tables) lives in the calling
+agent's system prompt, not here.
 
-    0. pds_select_node          — get node-specific context (abbreviations, workflow)
     1. pds_list_missions        — mission list for a node (no HTTP for hardcoded nodes)
     2. pds_list_dataset_dirs    — list sub-dirs under a path (cheap HTTP)
     3. pds_probe_datasets       — probe specific paths for PDS labels (recursive leaf-find)
@@ -23,45 +24,10 @@ from fastmcp import FastMCP
 from .inspect_collections import pds_inspect_collections
 from .list_dataset_dirs import pds_list_dataset_dirs
 from .list_missions import pds_list_missions
-from .node_registry import get_node_config, list_available_nodes
 from .probe_datasets import pds_probe_datasets
 from .resolve_volume import pds_resolve_volume
 
 mcp = FastMCP("pds-tools")
-
-
-# ------------------------------------------------------------------
-# Tool 0: select node (get node-specific context)
-# ------------------------------------------------------------------
-
-@mcp.tool(name="pds_select_node")
-def pds_select_node_tool(node: str) -> dict:
-    """Select a PDS node and get its workflow context.
-
-    Call this FIRST to get node-specific guidance (missions, abbreviations,
-    workflow tips). Then use the other tools with the same node parameter.
-
-    Args:
-        node: PDS node identifier. One of: "geo", "ppi", "lroc", "rms",
-            "sbn", "atm", "img", "naif".
-    """
-    try:
-        config = get_node_config(node)
-    except ValueError:
-        return {
-            "error": f"Unknown node: {node!r}",
-            "available_nodes": list_available_nodes(),
-        }
-    return {
-        "node": config.node_id,
-        "display_name": config.display_name,
-        "base_url": config.base_url,
-        "data_root": config.data_root,
-        "has_mission_layer": config.has_mission_layer,
-        "mission_count": len(config.missions),
-        "workflow_notes": config.workflow_notes,
-        "abbreviations": config.abbreviations,
-    }
 
 
 # ------------------------------------------------------------------

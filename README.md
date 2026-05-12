@@ -19,14 +19,17 @@ Every tool takes a `node` parameter; the server is stateless.
 
 ## Tools
 
+Five functional tools, all stateless and all taking a `node` parameter.
+
 | Tool | What it does |
 |---|---|
-| `pds_select_node` | Returns the node's static context (display name, base URL, mission count, abbreviation table, workflow notes). No HTTP. |
 | `pds_list_missions` | Mission directory list for a node. No HTTP — backed by the bundled registry. |
 | `pds_list_dataset_dirs` | Lists sub-directories under a path. Cheap HTTP (one listing per call). Each entry tagged `PDS3` / `PDS4` / null from naming convention. |
 | `pds_probe_datasets` | Probes specific dataset directories for `voldesc.cat`/`voldesc.sfd` (PDS3) or `bundle*.xml`/`bundle*.lblx` (PDS4). Returns slimmed label fields including `dataset_id`. |
 | `pds_inspect_collections` | Walks a PDS4 bundle's subdirs and returns each collection's `logical_identifier` + `title`. |
 | `pds_resolve_volume` | For multi-volume holdings (`COISS_2xxx`, `MROM_*`, `cocirs_*`, …) probes children to map each `DATA_SET_ID` to a path. Accepts a fuzzy `dataset_id_hint` for ranking. |
+
+This server contains **no agent-facing prompt content** — no workflow notes, no abbreviation tables, no per-node planning instructions. Callers are expected to bring their own system prompt with that context. Keeping the boundary clean lets you redeploy without re-shipping prompts.
 
 ## Run locally
 
