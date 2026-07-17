@@ -112,6 +112,7 @@ async def pds_list_dataset_dirs(
     *,
     node: str = "geo",
     filter: str | None = None,
+    limit: int | None = None,
     timeout: float = 30.0,
 ) -> PDSListDatasetDirsOutput:
     """List sub-directory names at a path on a PDS node.
@@ -125,6 +126,8 @@ async def pds_list_dataset_dirs(
         node: PDS node identifier ("geo", "ppi", "lroc").
         filter: Optional case-insensitive substring filter on directory names.
             When set, only directories whose names contain this string are returned.
+        limit: Optional cap on number of directories returned (applied after
+            filtering). If not set, all matching directories are returned.
         timeout: HTTP timeout in seconds.
     """
     base_url = get_base_url(node)
@@ -158,19 +161,21 @@ async def pds_list_dataset_dirs(
         if filter:
             filter_lower = filter.lower()
             filtered_dirs = [d for d in all_dirs if filter_lower in d.name.lower()]
+            dirs = filtered_dirs[:limit] if limit is not None else filtered_dirs
             return PDSListDatasetDirsOutput(
                 status="success",
                 path=path,
                 total=total,
                 filtered_total=len(filtered_dirs),
-                dirs=filtered_dirs,
+                dirs=dirs,
             )
 
+        dirs = all_dirs[:limit] if limit is not None else all_dirs
         return PDSListDatasetDirsOutput(
             status="success",
             path=path,
             total=total,
-            dirs=all_dirs,
+            dirs=dirs,
         )
 
     except PDSPathInvalidError as e:
