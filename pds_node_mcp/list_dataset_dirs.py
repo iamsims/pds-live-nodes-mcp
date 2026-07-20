@@ -112,7 +112,7 @@ async def pds_list_dataset_dirs(
     *,
     node: str = "geo",
     filter: str | None = None,
-    limit: int | None = None,
+    limit: int = 500,
     timeout: float = 30.0,
 ) -> PDSListDatasetDirsOutput:
     """List sub-directory names at a path on a PDS node.
@@ -126,10 +126,13 @@ async def pds_list_dataset_dirs(
         node: PDS node identifier ("geo", "ppi", "lroc").
         filter: Optional case-insensitive substring filter on directory names.
             When set, only directories whose names contain this string are returned.
-        limit: Optional cap on number of directories returned (applied after
-            filtering). If not set, all matching directories are returned.
+        limit: Cap on number of directories returned (applied after filtering).
+            Default 500, max 500. The `total`/`filtered_total` fields in the
+            response always report the pre-limit count so you know if more
+            entries exist.
         timeout: HTTP timeout in seconds.
     """
+    limit = min(limit, 500)
     base_url = get_base_url(node)
     try:
         async with PDSLiveClient(base_url=base_url, timeout=timeout) as client:
@@ -161,7 +164,7 @@ async def pds_list_dataset_dirs(
         if filter:
             filter_lower = filter.lower()
             filtered_dirs = [d for d in all_dirs if filter_lower in d.name.lower()]
-            dirs = filtered_dirs[:limit] if limit is not None else filtered_dirs
+            dirs = filtered_dirs[:limit]
             return PDSListDatasetDirsOutput(
                 status="success",
                 path=path,
@@ -170,7 +173,7 @@ async def pds_list_dataset_dirs(
                 dirs=dirs,
             )
 
-        dirs = all_dirs[:limit] if limit is not None else all_dirs
+        dirs = all_dirs[:limit]
         return PDSListDatasetDirsOutput(
             status="success",
             path=path,

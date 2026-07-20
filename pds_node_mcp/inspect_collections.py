@@ -91,7 +91,7 @@ async def pds_inspect_collections(
 
     Args:
         path: PDS4 bundle directory path on the node.
-        max_subdirs: Cap on sub-dirs to walk for collections (default 20).
+        max_subdirs: Cap on sub-dirs to walk for collections (default 20, max 50).
         node: PDS node identifier ("geo", "ppi", "lroc").
         timeout: HTTP timeout in seconds.
         concurrency: Max concurrent collection-label fetches.

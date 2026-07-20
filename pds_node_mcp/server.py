@@ -68,7 +68,7 @@ async def pds_list_dataset_dirs_tool(
     path: str,
     node: str = "geo",
     filter: str | None = None,
-    limit: int | None = None,
+    limit: int = 500,
 ) -> dict:
     """List sub-directory names under a path on a PDS node.
 
@@ -92,10 +92,10 @@ async def pds_list_dataset_dirs_tool(
         node: PDS node identifier. Default "geo".
         filter: Optional case-insensitive substring filter on directory names.
             Useful for flat nodes with many entries (e.g. PPI has ~767 datasets).
-        limit: Optional cap on number of directories returned (applied after
-            filtering). If not set, all matching directories are returned.
-            The `total`/`filtered_total` fields in the response always report
-            the pre-limit count so you know if more entries exist.
+        limit: Cap on number of directories returned (applied after
+            filtering). Default 500, max 500. The `total`/`filtered_total`
+            fields in the response always report the pre-limit count so you
+            know if more entries exist.
     """
     result = await pds_list_dataset_dirs(path=path, node=node, filter=filter, limit=limit)
     return result.model_dump()
@@ -109,7 +109,7 @@ async def pds_list_dataset_dirs_tool(
 async def pds_probe_datasets_tool(
     paths: list[str],
     node: str = "geo",
-    limit: int | None = None,
+    limit: int = 20,
 ) -> dict:
     """Probe specific dataset directories for PDS labels.
 
@@ -125,9 +125,9 @@ async def pds_probe_datasets_tool(
                (e.g. ["mex/mex-m-hrsc-5-refdr-dtm-v1/"] for GEO,
                 ["data/cassini-caps-calibrated/"] for PPI).
         node: PDS node identifier. Default "geo".
-        limit: Optional cap on number of label results returned per path
-            (relevant for hybrid dirs carrying both PDS3 and PDS4 labels).
-            If not set, all labels found for each path are returned.
+        limit: Cap on number of label results returned per path (relevant
+            for hybrid dirs carrying both PDS3 and PDS4 labels).
+            Default 20, max 20.
     """
     result = await pds_probe_datasets(paths=paths, node=node, limit=limit)
     return result.model_dump()
@@ -155,7 +155,7 @@ async def pds_inspect_collections_tool(
     Args:
         path: PDS4 bundle directory path on the node.
         node: PDS node identifier. Default "geo".
-        max_subdirs: Cap on sub-dirs to walk for collections (default 20).
+        max_subdirs: Cap on sub-dirs to walk for collections (default 20, max 50).
     """
     result = await pds_inspect_collections(path=path, max_subdirs=max_subdirs, node=node)
     return result.model_dump()
