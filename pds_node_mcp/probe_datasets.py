@@ -230,7 +230,7 @@ async def pds_probe_datasets(
     paths: list[str],
     *,
     node: str = "geo",
-    limit: int = 20,
+    limit: int | None = 20,
     timeout: float = 30.0,
 ) -> PDSProbeDatasetsOutput:
     """Probe one or more dataset directories for PDS labels.
@@ -252,13 +252,14 @@ async def pds_probe_datasets(
         node: PDS node identifier ("geo", "ppi", "lroc").
         limit: Cap on number of label results returned per path (relevant
             for hybrid dirs that carry both PDS3 and PDS4 labels).
-            Default 20, max 20.
+            Default 20, max 20. Passing null/None also uses the default —
+            there is no way to request an unbounded response.
         timeout: HTTP timeout in seconds.
     """
     if not paths:
         return PDSProbeDatasetsOutput(status="success")
 
-    limit = min(limit, 20)
+    limit = min(limit if limit is not None else 20, 20)
 
     # Cap the number of paths to prevent abuse
     paths = paths[:20]

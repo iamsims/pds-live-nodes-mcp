@@ -33,7 +33,7 @@ This server contains **no agent-facing prompt content** — no workflow notes, n
 
 ## Response size limits
 
-Every tool that can return a variable-size or unbounded list takes a bounding parameter. None of them accept `None`/unset to mean "no limit" — each has a real default and a hard max, so an agent can't cause an oversized response either by omitting the param or by passing something huge.
+Every tool that can return a variable-size or unbounded list takes a bounding parameter. `limit` params accept `int | None` in their schema (an agent can still pass `null` explicitly — this matters because some model/framework combinations do that instead of omitting the arg), but `None` is treated as "use the default," never as "no limit." Combined with the hard max, there's no input — omitted, `null`, or an oversized integer — that produces an unbounded response.
 
 | Tool | Param | Shape | Default | Max | Why this number |
 |---|---|---|---|---|---|
@@ -48,7 +48,7 @@ Two different clamp shapes show up above:
 - **Output caps** (`pds_list_dataset_dirs.limit`, `pds_probe_datasets.limit`) bound the size of the *response payload* — sized by how expensive one result row is to represent (a few strings vs. a nested label dict).
 - **Work/fan-out caps** (`pds_probe_datasets.paths`, `pds_inspect_collections.max_subdirs`, `pds_resolve_volume.sample`) bound the number of *upstream HTTP calls* a single tool invocation triggers — sized by how many requests are reasonable to issue serially before a call becomes slow or hammers the upstream PDS node.
 
-All are implemented the same way: `param = min(param, MAX)`, applied unconditionally right after the function signature, before any work happens. `max_subdirs` and `sample` additionally floor at 1 (`max(1, min(param, MAX))`) since a 0 or negative value would otherwise skip the walk/probe entirely; the two `limit` params skip that floor because a non-positive limit just yields an empty (harmless) result list.
+`max_subdirs` and `sample` clamp as `param = max(1, min(param, MAX))` — the floor at 1 exists because a 0 or negative value would otherwise skip the walk/probe entirely. The two `limit` params clamp as `param = min(param if param is not None else DEFAULT, MAX)` — no floor, since a non-positive limit just yields an empty (harmless) result list, but the explicit `None` handling is required: a bare `min(None, MAX)` raises `TypeError`, and the schema must keep accepting `null` for `limit` (unlike `max_subdirs`/`sample`, which are plain `int` with a default and never receive `null`) because some callers pass `null` explicitly rather than omitting the argument.
 
 ## Run locally
 

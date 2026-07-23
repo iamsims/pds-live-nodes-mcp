@@ -68,7 +68,7 @@ async def pds_list_dataset_dirs_tool(
     path: str,
     node: str = "geo",
     filter: str | None = None,
-    limit: int = 500,
+    limit: int | None = 500,
 ) -> dict:
     """List sub-directory names under a path on a PDS node.
 
@@ -93,9 +93,10 @@ async def pds_list_dataset_dirs_tool(
         filter: Optional case-insensitive substring filter on directory names.
             Useful for flat nodes with many entries (e.g. PPI has ~767 datasets).
         limit: Cap on number of directories returned (applied after
-            filtering). Default 500, max 500. The `total`/`filtered_total`
-            fields in the response always report the pre-limit count so you
-            know if more entries exist.
+            filtering). Default 500, max 500. Passing null also uses the
+            default — there is no way to request an unbounded response.
+            The `total`/`filtered_total` fields in the response always
+            report the pre-limit count so you know if more entries exist.
     """
     result = await pds_list_dataset_dirs(path=path, node=node, filter=filter, limit=limit)
     return result.model_dump()
@@ -109,7 +110,7 @@ async def pds_list_dataset_dirs_tool(
 async def pds_probe_datasets_tool(
     paths: list[str],
     node: str = "geo",
-    limit: int = 20,
+    limit: int | None = 20,
 ) -> dict:
     """Probe specific dataset directories for PDS labels.
 
@@ -127,7 +128,8 @@ async def pds_probe_datasets_tool(
         node: PDS node identifier. Default "geo".
         limit: Cap on number of label results returned per path (relevant
             for hybrid dirs carrying both PDS3 and PDS4 labels).
-            Default 20, max 20.
+            Default 20, max 20. Passing null also uses the default — there
+            is no way to request an unbounded response.
     """
     result = await pds_probe_datasets(paths=paths, node=node, limit=limit)
     return result.model_dump()
